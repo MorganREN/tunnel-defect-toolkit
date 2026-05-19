@@ -16,14 +16,14 @@ segmentation config declares paths, annotation format, class ids, colors, and
 morphology labels:
 
 ```yaml
-name: tongji
+name: my_tunnel_dataset
 task: semantic_segmentation
 
 paths:
-  images: data/raw/tongji
-  annotations: data/raw/tongji
-  masks: data/raw/tongji/masks
-  splits: data/raw/tongji/splits
+  images: data/raw/my_dataset/images
+  annotations: data/raw/my_dataset/annotations
+  masks: data/raw/my_dataset/masks
+  splits: data/raw/my_dataset/splits
 
 annotation:
   format: labelme
@@ -43,14 +43,26 @@ classes:
 
 ## CLI Workflow
 
+The toy dataset is the only dataset shipped with the repository:
+
 ```bash
-tdt validate configs/tongji_flat.yaml
-tdt labelme-to-masks configs/tongji_flat.yaml
-tdt manifest configs/tongji_flat.yaml --out data/raw/tongji/manifest.csv
-tdt split configs/tongji_flat.yaml --out data/raw/tongji/splits
-tdt analyze configs/tongji_flat.yaml --out data/raw/tongji/analysis_output
-tdt tile configs/tongji_flat.yaml --out data/processed/tongji_tiles
-tdt overlay configs/tongji_flat.yaml --out data/raw/tongji/overlays --limit 24
+tdt validate configs/toy.yaml
+tdt analyze configs/toy.yaml --out reports/toy_dataset
+tdt split configs/toy.yaml --out reports/toy_splits
+tdt tile configs/toy.yaml --out reports/toy_tiles --tile-size 4x4 --stride 4x4
+```
+
+For a private LabelMe dataset, copy `configs/labelme_template.yaml` to a local
+config file, edit its paths and classes, then run:
+
+```bash
+tdt validate configs/local_my_dataset.yaml
+tdt labelme-to-masks configs/local_my_dataset.yaml
+tdt manifest configs/local_my_dataset.yaml --out data/raw/my_dataset/manifest.csv
+tdt split configs/local_my_dataset.yaml --out data/raw/my_dataset/splits
+tdt analyze configs/local_my_dataset.yaml --out data/raw/my_dataset/analysis_output
+tdt tile configs/local_my_dataset.yaml --out data/processed/my_dataset_tiles
+tdt overlay configs/local_my_dataset.yaml --out data/raw/my_dataset/overlays --limit 24
 ```
 
 ## Full Morphology Profiling
@@ -60,8 +72,8 @@ compactness, elongation, solidity, skeleton length, and medial-axis width. It ca
 be slow on high-resolution masks, so workers are explicitly controlled:
 
 ```bash
-tdt analyze configs/tongji_flat.yaml \
-  --out data/raw/tongji/analysis_output_morphology \
+tdt analyze configs/local_my_dataset.yaml \
+  --out data/raw/my_dataset/analysis_output_morphology \
   --with-morphology \
   --workers 4
 ```

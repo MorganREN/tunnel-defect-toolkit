@@ -186,6 +186,7 @@ cython_debug/
 # Local datasets
 data/raw/*
 !data/raw/README.md
+configs/local*.yaml
 
 # PyCharm
 #   JetBrains specific template is maintained in a separate JetBrains.gitignore that can
