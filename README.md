@@ -43,31 +43,31 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-The following toy commands assume you are working from a cloned repository,
-because the toy data and example configs live in the GitHub repo rather than in
-the installed wheel.
+The following example commands assume you are working from a cloned repository,
+because the official `example_data` sample lives in the GitHub repo rather than
+in the installed wheel.
 
-Validate the toy dataset config:
+Validate the example dataset config:
 
 ```bash
-tdt validate configs/toy.yaml
+tdt validate configs/example_data.yaml
 ```
 
 Generate a dataset report:
 
 ```bash
-tdt analyze configs/toy.yaml --out reports/toy_dataset
+tdt analyze configs/example_data.yaml --out reports/example_data
 ```
 
-Create source-level splits and tiles for the toy dataset:
+Create source-level splits and tiles for the example dataset:
 
 ```bash
-tdt split configs/toy.yaml --out reports/toy_splits --seed 42
-tdt tile configs/toy.yaml \
-  --out reports/toy_tiles \
-  --tile-size 4x4 \
-  --stride 4x4 \
-  --splits reports/toy_splits/splits.csv \
+tdt split configs/example_data.yaml --out reports/example_data_splits --seed 42
+tdt tile configs/example_data.yaml \
+  --out reports/example_data_tiles \
+  --tile-size 512x512 \
+  --stride 512x512 \
+  --splits reports/example_data_splits/splits.csv \
   --require-splits
 ```
 
@@ -150,10 +150,10 @@ V1.0.0 does not:
 
 ## Dataset Placement
 
-The repository includes a tiny toy mask dataset under:
+The repository includes a small real tunnel defect example dataset under:
 
 ```text
-examples/toy_dataset/
+examples/example_data/
 ```
 
 Place your own datasets manually under:

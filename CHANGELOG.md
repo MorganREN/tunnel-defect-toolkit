@@ -15,7 +15,9 @@ Initial alpha release candidate.
 - Dataset analysis reports, dataset cards, class distribution, resolution summaries,
   co-occurrence matrices, quality summaries, and morphology profiling.
 - Morphology plots and mask overlay export.
-- Toy dataset, tests, CI workflow, MIT license, and citation metadata.
+- `example_data`, a 20-image real tunnel defect example dataset with LabelMe
+  annotations, generated semantic masks, and selection metadata.
+- Tests, CI workflow, MIT license, and citation metadata.
 
 ### Not Included
 

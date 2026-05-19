@@ -1,7 +1,8 @@
 # Raw Dataset Placement
 
-Place real datasets here manually. This directory is intentionally separate from
-the toy dataset and should not be used to commit restricted or private data.
+Place full research datasets here manually. This directory is intentionally
+separate from the small public `examples/example_data` sample and should not be
+used to commit restricted or private data.
 
 Suggested layout:
 
@@ -12,12 +13,4 @@ data/raw/
     annotations/
     masks/
     splits/
-  codebrim/
-    images/
-    annotations/
-    masks/
-  rdd2022/
-    images/
-    annotations/
-    masks/
 ```

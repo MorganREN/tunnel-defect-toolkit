@@ -5,7 +5,7 @@
 Validate dataset config paths, classes, and image/mask pairing.
 
 ```bash
-tdt validate configs/toy.yaml
+tdt validate configs/example_data.yaml
 ```
 
 ## `tdt labelme-to-masks`
@@ -46,7 +46,7 @@ Generate dataset reports. Add `--with-morphology` for full instance-level shape
 descriptors.
 
 ```bash
-tdt analyze configs/toy.yaml --out analysis_output
+tdt analyze configs/example_data.yaml --out analysis_output
 tdt analyze configs/local_my_dataset.yaml --out analysis_output_morphology --with-morphology --workers 4
 ```
 

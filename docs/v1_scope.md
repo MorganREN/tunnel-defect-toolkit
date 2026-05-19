@@ -20,6 +20,7 @@ toolkit for tunnel defect segmentation datasets.
 - Morphology figures
 - Mask overlay export
 - Dataset report and dataset card generation
+- A small real `example_data` dataset for documentation and smoke-test workflows
 
 ## Excluded
 

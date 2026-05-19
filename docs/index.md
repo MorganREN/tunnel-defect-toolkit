@@ -43,13 +43,13 @@ classes:
 
 ## CLI Workflow
 
-The toy dataset is the only dataset shipped with the repository:
+`example_data` is the official small real dataset shipped with the repository:
 
 ```bash
-tdt validate configs/toy.yaml
-tdt analyze configs/toy.yaml --out reports/toy_dataset
-tdt split configs/toy.yaml --out reports/toy_splits
-tdt tile configs/toy.yaml --out reports/toy_tiles --tile-size 4x4 --stride 4x4
+tdt validate configs/example_data.yaml
+tdt analyze configs/example_data.yaml --out reports/example_data
+tdt split configs/example_data.yaml --out reports/example_data_splits
+tdt tile configs/example_data.yaml --out reports/example_data_tiles --tile-size 512x512 --stride 512x512
 ```
 
 For a private LabelMe dataset, copy `configs/labelme_template.yaml` to a local
@@ -72,10 +72,10 @@ compactness, elongation, solidity, skeleton length, and medial-axis width. It ca
 be slow on high-resolution masks, so workers are explicitly controlled:
 
 ```bash
-tdt analyze configs/local_my_dataset.yaml \
-  --out data/raw/my_dataset/analysis_output_morphology \
+tdt analyze configs/example_data.yaml \
+  --out reports/example_data_morphology \
   --with-morphology \
-  --workers 4
+  --workers 2
 ```
 
 ## Generated Artifacts
