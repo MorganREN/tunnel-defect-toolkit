@@ -12,6 +12,8 @@ from tdt.datasets.manifest import DatasetItem, collect_dataset_items
 from tdt.datasets.schema import DatasetConfig
 from tdt.utils.io import list_images
 
+SPLIT_SCHEMA_VERSION = "tdt-splits-v1"
+
 
 @dataclass(frozen=True)
 class SplitRecord:
@@ -85,6 +87,7 @@ def split_dataset(
     out.mkdir(parents=True, exist_ok=True)
     rows = [
         {
+            "schema_version": SPLIT_SCHEMA_VERSION,
             "image_id": item.image_id,
             "image_path": str(item.image_path),
             "mask_path": str(item.mask_path) if item.mask_path is not None else "",

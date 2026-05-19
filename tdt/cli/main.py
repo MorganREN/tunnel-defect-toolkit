@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from tdt import __version__
 from tdt.datasets.converters import convert_labelme_directory, labelme_directory_to_coco
 from tdt.datasets.manifest import collect_dataset_items, write_manifest
 from tdt.datasets.registry import load_config
@@ -20,6 +21,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run the tdt command-line interface."""
 
     parser = argparse.ArgumentParser(prog="tdt")
+    parser.add_argument("--version", action="version", version=f"tdt {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     validate = subparsers.add_parser("validate", help="Validate a dataset config.")
@@ -67,6 +69,12 @@ def main(argv: list[str] | None = None) -> int:
     tile.add_argument("--out", type=Path, required=True)
     tile.add_argument("--tile-size", default=None, help="Tile size as WIDTHxHEIGHT, e.g. 1024x1024.")
     tile.add_argument("--stride", default=None, help="Stride as WIDTHxHEIGHT, e.g. 768x768.")
+    tile.add_argument("--splits", type=Path, default=None, help="Optional splits.csv for split-aware tiling.")
+    tile.add_argument(
+        "--require-splits",
+        action="store_true",
+        help="Fail if split-aware tiling cannot find a split assignment.",
+    )
     tile.add_argument("--no-progress", action="store_true", help="Disable progress bars.")
 
     overlay = subparsers.add_parser("overlay", help="Export image/mask overlay figures.")
@@ -186,6 +194,8 @@ def main(argv: list[str] | None = None) -> int:
             args.out,
             tile_size=_parse_pair(args.tile_size),
             stride=_parse_pair(args.stride),
+            splits_csv=args.splits,
+            require_splits=args.require_splits,
             show_progress=not args.no_progress,
         )
         print(manifest_path)

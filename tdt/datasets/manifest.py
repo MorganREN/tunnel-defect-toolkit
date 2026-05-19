@@ -10,6 +10,8 @@ import pandas as pd
 from tdt.datasets.schema import DatasetConfig
 from tdt.utils.io import list_images
 
+MANIFEST_SCHEMA_VERSION = "tdt-manifest-v1"
+
 
 @dataclass(frozen=True)
 class DatasetItem:
@@ -53,6 +55,7 @@ def items_to_dataframe(items: list[DatasetItem]) -> pd.DataFrame:
     rows = []
     for item in items:
         row = asdict(item)
+        row["schema_version"] = MANIFEST_SCHEMA_VERSION
         row["image_path"] = str(item.image_path)
         row["mask_path"] = str(item.mask_path) if item.mask_path is not None else ""
         rows.append(row)

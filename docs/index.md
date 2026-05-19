@@ -86,3 +86,10 @@ tdt analyze configs/tongji_flat.yaml \
 - `images/*.png`
 - `masks/*.png`
 - `tile_manifest.csv`
+
+## Additional Documentation
+
+- [V1 scope](v1_scope.md)
+- [CLI reference](cli_reference.md)
+- [Artifact schema](artifact_schema.md)
+- [Release checklist](release_checklist.md)

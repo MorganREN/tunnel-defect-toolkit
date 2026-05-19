@@ -1,15 +1,15 @@
 # Tunnel Defect Toolkit
 
 `tunnel-defect-toolkit` is a model-agnostic Python toolkit for tunnel defect
-dataset analysis, resolution-adaptive preprocessing, structure-aware evaluation,
-visualization, and reproducible reporting.
+dataset analysis, resolution-adaptive preprocessing, visualization, and
+reproducible reporting.
 
 The package is designed to support morphology-aware tunnel defect benchmark and
 dataset papers first, while keeping a clean bridge to later TMDS model releases.
 
-## Scope of V1
+## Scope of V1.0.0
 
-V1 focuses on data and evaluation utilities:
+V1.0.0 focuses on dataset and preprocessing utilities:
 
 - Dataset schemas and configuration validation
 - LabelMe / mask-oriented dataset conversion hooks
@@ -17,13 +17,13 @@ V1 focuses on data and evaluation utilities:
 - Class, pixel, instance, and resolution distribution analysis
 - Source-image-level splitting to avoid patch leakage
 - Resolution-adaptive tiling and Gaussian-weighted stitching
-- Model-agnostic segmentation metrics
-- Boundary, skeleton, and component-aware structure metrics
+- Split-aware tile generation
 - Static dataset and evaluation reports
 - CLI entry points
 
 V1 intentionally does not include TMDS model code, routing visualization, model
-training framework bindings, or quantization tooling.
+training framework bindings, quantization tooling, or a benchmark evaluation
+pipeline.
 
 ## Installation
 
@@ -94,6 +94,27 @@ Export COCO-style polygon annotations:
 ```bash
 tdt labelme-to-coco configs/tongji_flat.yaml --out data/raw/tongji/annotations.coco.json
 ```
+
+## V1 Boundaries
+
+V1.0.0 can:
+
+- validate dataset configs
+- convert LabelMe polygons to masks and COCO-style JSON
+- write source manifests
+- create source-image-level train/val/test splits
+- generate split-aware image/mask tiles
+- profile class, resolution, quality, co-occurrence, and morphology statistics
+- export morphology figures and mask overlays
+- write HTML reports and dataset cards
+
+V1.0.0 does not:
+
+- train models
+- run benchmark evaluation on predictions
+- include TMDS architecture, routing maps, or learned modules
+- export ONNX/TensorRT/INT8 deployments
+- provide an interactive web app
 
 ## Dataset Placement
 
