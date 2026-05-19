@@ -1,2 +1,86 @@
-# tunnel-defect-toolkit
-An open-source tunnel defect analysis toolkit
+# Tunnel Defect Toolkit
+
+`tunnel-defect-toolkit` is a model-agnostic Python toolkit for tunnel defect
+dataset analysis, resolution-adaptive preprocessing, structure-aware evaluation,
+visualization, and reproducible reporting.
+
+The package is designed to support morphology-aware tunnel defect benchmark and
+dataset papers first, while keeping a clean bridge to later TMDS model releases.
+
+## Scope of V1
+
+V1 focuses on data and evaluation utilities:
+
+- Dataset schemas and configuration validation
+- LabelMe / mask-oriented dataset conversion hooks
+- Morphology profiling for linear and areal defects
+- Class, pixel, instance, and resolution distribution analysis
+- Source-image-level splitting to avoid patch leakage
+- Resolution-adaptive tiling and Gaussian-weighted stitching
+- Model-agnostic segmentation metrics
+- Boundary, skeleton, and component-aware structure metrics
+- Static dataset and evaluation reports
+- CLI entry points
+
+V1 intentionally does not include TMDS model code, routing visualization, model
+training framework bindings, or quantization tooling.
+
+## Installation
+
+```bash
+pip install -e ".[dev]"
+```
+
+## Quick Start
+
+Validate the toy dataset config:
+
+```bash
+tdt validate configs/toy.yaml
+```
+
+Generate a dataset report:
+
+```bash
+tdt analyze configs/toy.yaml --out reports/toy_dataset
+```
+
+Run full morphology profiling with process workers:
+
+```bash
+tdt analyze configs/tongji_flat.yaml \
+  --out data/raw/tongji/analysis_output_morphology \
+  --with-morphology \
+  --workers 4
+```
+
+Use `--workers auto` for a conservative automatic process count. If process
+workers are unavailable in a restricted environment, the toolkit falls back to
+single-process execution with a warning.
+
+## Dataset Placement
+
+The repository includes a tiny toy mask dataset under:
+
+```text
+examples/toy_dataset/
+```
+
+Place your own datasets manually under:
+
+```text
+data/raw/
+```
+
+Keep real datasets out of version control unless their license explicitly allows
+redistribution.
+
+## Package Names
+
+- PyPI package: `tunnel-defect-toolkit`
+- Python import: `tdt`
+
+## Citation
+
+If you use this toolkit in academic work, cite the accompanying dataset or
+benchmark paper once released. A provisional `CITATION.cff` is included.

@@ -1,0 +1,21 @@
+name: rdd2022
+task: detection_or_segmentation
+
+paths:
+  images: data/raw/rdd2022/images
+  annotations: data/raw/rdd2022/annotations
+  masks: data/raw/rdd2022/masks
+
+annotation:
+  format: dataset_specific
+  background_id: 0
+
+classes: []
+
+tiling:
+  strategy: fixed
+  split_before_tiling: true
+  merge: gaussian
+
+evaluation:
+  ignore_index: 255

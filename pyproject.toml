@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tunnel-defect-toolkit"
+version = "0.1.0"
+description = "Model-agnostic toolkit for tunnel defect dataset analysis, preprocessing, evaluation, and reporting."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "Mohan Ren" }
+]
+keywords = [
+  "tunnel defects",
+  "semantic segmentation",
+  "dataset analysis",
+  "morphology",
+  "structural health monitoring"
+]
+dependencies = [
+  "numpy>=1.23",
+  "pillow>=9.0",
+  "pyyaml>=6.0",
+  "pandas>=1.5",
+  "matplotlib>=3.6",
+  "scikit-image>=0.20",
+  "scipy>=1.9",
+  "tqdm>=4.66"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "ruff>=0.4",
+  "mypy>=1.8"
+]
+
+[project.scripts]
+tdt = "tdt.cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["tdt*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
