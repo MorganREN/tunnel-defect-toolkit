@@ -54,9 +54,9 @@ dev = [
 tdt = "tdt.cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/mohan-ren/tunnel-defect-toolkit"
-Repository = "https://github.com/mohan-ren/tunnel-defect-toolkit"
-Issues = "https://github.com/mohan-ren/tunnel-defect-toolkit/issues"
+Homepage = "https://github.com/MorganREN/tunnel-defect-toolkit"
+Repository = "https://github.com/MorganREN/tunnel-defect-toolkit"
+Issues = "https://github.com/MorganREN/tunnel-defect-toolkit/issues"
 
 [tool.setuptools.packages.find]
 include = ["tdt*"]
