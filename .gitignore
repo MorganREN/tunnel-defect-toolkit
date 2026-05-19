@@ -2,6 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
+.DS_Store
 
 # C extensions
 *.so
@@ -38,6 +39,7 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
+reports/
 .tox/
 .nox/
 .coverage
@@ -180,6 +182,10 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Local datasets
+data/raw/*
+!data/raw/README.md
 
 # PyCharm
 #   JetBrains specific template is maintained in a separate JetBrains.gitignore that can
