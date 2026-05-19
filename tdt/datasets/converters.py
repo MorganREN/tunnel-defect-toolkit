@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -101,6 +102,75 @@ def convert_labelme_directory(
     return outputs
 
 
+def labelme_directory_to_coco(
+    annotation_dir: str | Path,
+    output_path: str | Path,
+    class_to_id: dict[str, int],
+    background_id: int = 0,
+) -> Path:
+    """Convert a directory of LabelMe JSON files to a COCO-style JSON file."""
+
+    annotations = sorted(Path(annotation_dir).glob("*.json"))
+    tolerant_mapping = build_label_mapping(class_to_id)
+    categories = [
+        {"id": int(class_id), "name": str(label), "supercategory": "defect"}
+        for label, class_id in sorted(class_to_id.items(), key=lambda item: item[1])
+        if int(class_id) != background_id
+    ]
+    seen_category_ids: set[int] = set()
+    deduped_categories = []
+    for category in categories:
+        if category["id"] in seen_category_ids:
+            continue
+        seen_category_ids.add(category["id"])
+        deduped_categories.append(category)
+
+    coco: dict[str, Any] = {"images": [], "annotations": [], "categories": deduped_categories}
+    annotation_id = 1
+    for image_id, path in enumerate(annotations, start=1):
+        with path.open("r", encoding="utf-8") as stream:
+            data = json.load(stream)
+        width = int(data["imageWidth"])
+        height = int(data["imageHeight"])
+        coco["images"].append(
+            {
+                "id": image_id,
+                "file_name": data.get("imagePath") or f"{path.stem}.png",
+                "width": width,
+                "height": height,
+            }
+        )
+        for shape in data.get("shapes", []):
+            label = str(shape.get("label", ""))
+            category_id = tolerant_mapping.get(label, tolerant_mapping.get(_normalize_label(label)))
+            if category_id is None or int(category_id) == background_id:
+                continue
+            points = [(float(x), float(y)) for x, y in shape.get("points", [])]
+            if len(points) < 3:
+                continue
+            xs = [point[0] for point in points]
+            ys = [point[1] for point in points]
+            segmentation = [coord for point in points for coord in point]
+            area = _polygon_area(points)
+            coco["annotations"].append(
+                {
+                    "id": annotation_id,
+                    "image_id": image_id,
+                    "category_id": int(category_id),
+                    "segmentation": [segmentation],
+                    "area": area,
+                    "bbox": [min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys)],
+                    "iscrowd": 0,
+                }
+            )
+            annotation_id += 1
+
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(coco, indent=2), encoding="utf-8")
+    return output
+
+
 def labelme_to_mask_tolerant(
     labelme_json: str | Path,
     class_to_id: dict[str, int],
@@ -129,3 +199,11 @@ def labelme_to_mask_tolerant(
 
 def _normalize_label(label: str) -> str:
     return "".join(char.lower() for char in label if char.isalnum())
+
+
+def _polygon_area(points: list[tuple[float, float]]) -> float:
+    area = 0.0
+    for index, point in enumerate(points):
+        next_point = points[(index + 1) % len(points)]
+        area += point[0] * next_point[1] - next_point[0] * point[1]
+    return abs(area) / 2.0

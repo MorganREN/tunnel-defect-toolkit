@@ -45,6 +45,28 @@ Generate a dataset report:
 tdt analyze configs/toy.yaml --out reports/toy_dataset
 ```
 
+For a LabelMe dataset, a typical workflow is:
+
+```bash
+# 1. Convert LabelMe polygons to semantic masks
+tdt labelme-to-masks configs/tongji_flat.yaml
+
+# 2. Write a source image/mask manifest
+tdt manifest configs/tongji_flat.yaml --out data/raw/tongji/manifest.csv
+
+# 3. Create source-image-level splits before tiling
+tdt split configs/tongji_flat.yaml --out data/raw/tongji/splits --seed 42
+
+# 4. Generate dataset analysis reports
+tdt analyze configs/tongji_flat.yaml --out data/raw/tongji/analysis_output
+
+# 5. Generate resolution-adaptive image/mask tiles
+tdt tile configs/tongji_flat.yaml --out data/processed/tongji_tiles
+
+# 6. Export annotation overlays for visual QA
+tdt overlay configs/tongji_flat.yaml --out data/raw/tongji/overlays --limit 24
+```
+
 Run full morphology profiling with process workers:
 
 ```bash
@@ -57,6 +79,21 @@ tdt analyze configs/tongji_flat.yaml \
 Use `--workers auto` for a conservative automatic process count. If process
 workers are unavailable in a restricted environment, the toolkit falls back to
 single-process execution with a warning.
+
+Generate morphology figures from descriptor CSV:
+
+```bash
+tdt plot-morphology \
+  data/raw/tongji/analysis_output_morphology/morphology_descriptors.csv \
+  --out data/raw/tongji/analysis_output_morphology/figures \
+  --formats png,pdf
+```
+
+Export COCO-style polygon annotations:
+
+```bash
+tdt labelme-to-coco configs/tongji_flat.yaml --out data/raw/tongji/annotations.coco.json
+```
 
 ## Dataset Placement
 
