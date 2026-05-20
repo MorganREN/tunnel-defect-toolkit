@@ -23,4 +23,4 @@ Initial alpha release candidate.
 
 - Model training framework.
 - Benchmark evaluation pipeline for prediction folders.
-- TMDS architecture, routing visualization, or quantization helpers.
+- Model architecture, routing visualization, or quantization helpers.

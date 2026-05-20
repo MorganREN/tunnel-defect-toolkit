@@ -5,7 +5,7 @@ dataset analysis, resolution-adaptive preprocessing, visualization, and
 reproducible reporting.
 
 The package is designed to support morphology-aware tunnel defect benchmark and
-dataset papers first, while keeping a clean bridge to later TMDS model releases.
+dataset papers first, while staying independent of any specific model family.
 
 ## Scope of V1.0.0
 
@@ -21,9 +21,8 @@ V1.0.0 focuses on dataset and preprocessing utilities:
 - Static dataset and evaluation reports
 - CLI entry points
 
-V1 intentionally does not include TMDS model code, routing visualization, model
-training framework bindings, quantization tooling, or a benchmark evaluation
-pipeline.
+V1 intentionally does not include model code, routing visualization, training
+framework bindings, quantization tooling, or a benchmark evaluation pipeline.
 
 ## Installation
 
@@ -144,7 +143,7 @@ V1.0.0 does not:
 
 - train models
 - run benchmark evaluation on predictions
-- include TMDS architecture, routing maps, or learned modules
+- include model architectures, routing maps, or learned modules
 - export ONNX/TensorRT/INT8 deployments
 - provide an interactive web app
 

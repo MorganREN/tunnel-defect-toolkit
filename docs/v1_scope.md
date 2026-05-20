@@ -26,7 +26,7 @@ toolkit for tunnel defect segmentation datasets.
 
 - Model training
 - Prediction-folder benchmark evaluation
-- TMDS model code
+- Model-specific architecture code
 - Routing map visualization
 - Quantization and deployment export
 - Interactive web dashboard
