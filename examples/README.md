@@ -1,7 +1,9 @@
 # Examples
 
-The `toy_dataset` directory contains one tiny synthetic image and mask pair for
-smoke tests and documentation examples.
+`example_data` is the official small example dataset for the toolkit. It contains
+20 real tunnel defect images with paired LabelMe annotations and generated
+semantic masks.
 
-Real tunnel datasets should be placed manually under `data/raw/` according to
-their license and access restrictions.
+Real research datasets that are not explicitly prepared as examples should be
+placed under `data/raw/` and kept out of version control unless redistribution
+is allowed.

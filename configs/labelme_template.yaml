@@ -1,0 +1,36 @@
+name: my_tunnel_dataset
+task: semantic_segmentation
+
+paths:
+  images: data/raw/my_dataset/images
+  annotations: data/raw/my_dataset/annotations
+  masks: data/raw/my_dataset/masks
+  splits: data/raw/my_dataset/splits
+
+annotation:
+  format: labelme
+  background_id: 0
+
+classes:
+  - id: 0
+    name: background
+    morphology: background
+    color: [0, 0, 0]
+  - id: 1
+    name: crack
+    aliases: [crack]
+    morphology: linear
+    color: [255, 0, 0]
+  - id: 2
+    name: leakage
+    aliases: [leakage]
+    morphology: areal
+    color: [0, 0, 255]
+
+tiling:
+  strategy: resolution_adaptive
+  split_before_tiling: true
+  merge: gaussian
+
+evaluation:
+  ignore_index: 255

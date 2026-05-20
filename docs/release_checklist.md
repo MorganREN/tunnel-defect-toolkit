@@ -17,9 +17,15 @@ python -m build
 
 ```bash
 tdt --version
-tdt validate configs/toy.yaml
-tdt analyze configs/toy.yaml --out reports/release_check --with-morphology --workers 1
-tdt tile configs/toy.yaml --out reports/release_tiles --tile-size 4x4 --stride 4x4
+tdt validate configs/example_data.yaml
+tdt analyze configs/example_data.yaml --out reports/release_check --with-morphology --workers 1
+tdt split configs/example_data.yaml --out reports/release_splits --seed 42
+tdt tile configs/example_data.yaml \
+  --out reports/release_tiles \
+  --tile-size 512x512 \
+  --stride 512x512 \
+  --splits reports/release_splits/splits.csv \
+  --require-splits
 ```
 
 5. Publish first to TestPyPI if credentials are available.

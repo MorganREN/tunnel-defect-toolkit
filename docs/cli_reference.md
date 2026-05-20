@@ -5,7 +5,7 @@
 Validate dataset config paths, classes, and image/mask pairing.
 
 ```bash
-tdt validate configs/toy.yaml
+tdt validate configs/example_data.yaml
 ```
 
 ## `tdt labelme-to-masks`
@@ -13,7 +13,7 @@ tdt validate configs/toy.yaml
 Convert LabelMe polygon annotations to semantic masks.
 
 ```bash
-tdt labelme-to-masks configs/tongji_flat.yaml
+tdt labelme-to-masks configs/local_my_dataset.yaml
 ```
 
 ## `tdt labelme-to-coco`
@@ -21,7 +21,7 @@ tdt labelme-to-masks configs/tongji_flat.yaml
 Convert LabelMe polygon annotations to a COCO-style JSON file.
 
 ```bash
-tdt labelme-to-coco configs/tongji_flat.yaml --out annotations.coco.json
+tdt labelme-to-coco configs/local_my_dataset.yaml --out annotations.coco.json
 ```
 
 ## `tdt manifest`
@@ -29,7 +29,7 @@ tdt labelme-to-coco configs/tongji_flat.yaml --out annotations.coco.json
 Write image/mask manifest.
 
 ```bash
-tdt manifest configs/tongji_flat.yaml --out manifest.csv
+tdt manifest configs/local_my_dataset.yaml --out manifest.csv
 ```
 
 ## `tdt split`
@@ -37,7 +37,7 @@ tdt manifest configs/tongji_flat.yaml --out manifest.csv
 Create source-image-level train/val/test splits.
 
 ```bash
-tdt split configs/tongji_flat.yaml --out splits --train 0.7 --val 0.15 --seed 42
+tdt split configs/local_my_dataset.yaml --out splits --train 0.7 --val 0.15 --seed 42
 ```
 
 ## `tdt analyze`
@@ -46,8 +46,8 @@ Generate dataset reports. Add `--with-morphology` for full instance-level shape
 descriptors.
 
 ```bash
-tdt analyze configs/tongji_flat.yaml --out analysis_output
-tdt analyze configs/tongji_flat.yaml --out analysis_output_morphology --with-morphology --workers 4
+tdt analyze configs/example_data.yaml --out analysis_output
+tdt analyze configs/local_my_dataset.yaml --out analysis_output_morphology --with-morphology --workers 4
 ```
 
 ## `tdt tile`
@@ -57,7 +57,7 @@ separated into split subdirectories and the split is recorded in
 `tile_manifest.csv`.
 
 ```bash
-tdt tile configs/tongji_flat.yaml --out tiles --require-splits
+tdt tile configs/local_my_dataset.yaml --out tiles --require-splits
 ```
 
 ## `tdt overlay`
@@ -65,7 +65,7 @@ tdt tile configs/tongji_flat.yaml --out tiles --require-splits
 Export image/mask overlay figures.
 
 ```bash
-tdt overlay configs/tongji_flat.yaml --out overlays --limit 24
+tdt overlay configs/local_my_dataset.yaml --out overlays --limit 24
 ```
 
 ## `tdt plot-morphology`

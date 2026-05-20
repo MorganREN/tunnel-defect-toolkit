@@ -1,0 +1,21 @@
+image_id,image_file,annotation_file,mask_file,width,height,instance_count,labels,selection_rationale
+C0112,C0112.jpg,C0112.json,C0112.png,4000,3000,24,crack;leakageB;lining falling off,"multi-class, dense crack/leakageB/lining falling off"
+C0111,C0111.jpg,C0111.json,C0111.png,4000,3000,20,crack;leakageG;lining falling off,"multi-class, includes rare leakageG with crack and lining falling off"
+S0047,S0047.jpg,S0047.json,S0047.png,5152,3864,19,crack;leakageB;segment damage,"multi-class, high-resolution crack/leakageB/segment damage"
+L0094,L0094.jpg,L0094.json,L0094.png,781,515,12,leakageB;leakageW;segment damage,compact multi-class sample with leakageW and segment damage
+C0041,C0041.png,C0041.json,C0041.png,887,829,10,crack;leakageG;leakageW,compact sample covering crack/leakageG/leakageW
+EF0012,EF0012.png,EF0012.json,EF0012.png,410,613,8,leakageB;leakageG;lining falling off,compact leakageB/leakageG/lining falling off sample
+L0115,L0115.png,L0115.json,L0115.png,558,375,6,crack;leakageB;lining falling off,small image with crack/leakageB/lining falling off
+L0117,L0117.png,L0117.json,L0117.png,613,410,5,crack;leakageW;lining falling off,small image with crack/leakageW/lining falling off
+F0010,F0010.jpg,F0010.json,F0010.png,960,720,28,leakageB;lining falling off,dense leakageB and lining falling off instances
+L0163,L0163.png,L0163.json,L0163.png,613,410,6,leakageG;leakageW,compact rare leakageG/leakageW co-occurrence
+S0052,S0052.jpg,S0052.json,S0052.png,812,549,7,leakageW;segment damage,compact leakageW and segment damage sample
+ES0015,ES0015.jpg,ES0015.json,ES0015.png,1944,2592,9,crack;segment damage,medium crack and segment damage sample
+L0154,L0154.JPG,L0154.json,L0154.png,2592,1944,11,leakageB;segment damage,medium leakageB and segment damage sample
+C0119,C0119.jpg,C0119.json,C0119.png,3264,2448,8,crack;leakageB;leakageG,large crack/leakageB/leakageG sample
+KL0067,KL0067.jpg,KL0067.json,KL0067.png,1600,1200,15,leakageB,single-class leakageB with many instances
+C0080,C0080.jpg,C0080.json,C0080.png,883,996,12,crack,single-class crack with many instances
+L0242,L0242.jpg,L0242.json,L0242.png,4000,3000,9,leakageG,single-class rare leakageG sample
+EL0009,EL0009.jpg,EL0009.json,EL0009.png,4000,3000,5,leakageW,single-class rare leakageW sample
+F0013,F0013.jpg,F0013.json,F0013.png,4000,3000,45,lining falling off,single-class lining falling off with many instances
+ES0019,ES0019.jpg,ES0019.json,ES0019.png,1944,2592,14,segment damage,single-class segment damage with many instances
