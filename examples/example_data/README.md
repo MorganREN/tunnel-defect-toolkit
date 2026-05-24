@@ -1,9 +1,12 @@
 # example_data
 
 `example_data` is the official small example dataset for
-`tunnel-defect-toolkit`. It contains 20 real tunnel defect images sampled from
-the project maintainer's Tongji-style LabelMe dataset, with paired LabelMe JSON
+`tunnel-defect-toolkit`. It contains 20 real tunnel defect images selected from
+an annotated collection maintained for this project, with paired LabelMe JSON
 annotations and semantic masks generated from those annotations.
+
+The data files in this directory are distributed under
+[CC BY 4.0](DATA_LICENSE.md), separately from the toolkit source license.
 
 The subset is selected to cover:
 
@@ -53,5 +56,5 @@ tdt tile configs/example_data.yaml \
 ## Notes
 
 The sample is intended for tutorial, documentation, and smoke-test workflows. It
-is intentionally small and should not be treated as a benchmark split or as a
-statistically representative release of the full source dataset.
+is intentionally small and should not be treated as a statistically
+representative release of the full source dataset.

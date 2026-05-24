@@ -1,7 +1,7 @@
 """Tunnel Defect Toolkit.
 
-Model-agnostic utilities for tunnel defect dataset analysis, preprocessing,
-evaluation, visualization, inference support, and reporting.
+Utilities for semantic-mask dataset morphology analysis, quality inspection,
+visualization, reporting, and paired image/mask tiling.
 """
 
 __all__ = ["__version__"]

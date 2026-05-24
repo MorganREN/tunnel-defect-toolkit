@@ -19,12 +19,13 @@ def overlay_mask(
     mask: np.ndarray,
     color_map: dict[int, tuple[int, int, int]],
     alpha: float = 0.45,
+    background_id: int = 0,
 ) -> np.ndarray:
     """Overlay a semantic mask on an RGB image."""
 
-    base = image[..., :3].astype(np.float32)
-    color = colorize_mask(mask, color_map).astype(np.float32)
-    foreground = mask != 0
+    base: np.ndarray = image[..., :3].astype(np.float32)
+    color: np.ndarray = colorize_mask(mask, color_map).astype(np.float32)
+    foreground = mask != background_id
     out = base.copy()
     out[foreground] = (1.0 - alpha) * base[foreground] + alpha * color[foreground]
     return np.clip(out, 0, 255).astype(np.uint8)

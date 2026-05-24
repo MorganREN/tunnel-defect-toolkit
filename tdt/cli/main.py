@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from tdt import __version__
 from tdt.datasets.converters import convert_labelme_directory, labelme_directory_to_coco
 from tdt.datasets.manifest import collect_dataset_items, write_manifest
 from tdt.datasets.registry import load_config
+from tdt.datasets.schema import DatasetConfig
 from tdt.datasets.split import split_dataset
 from tdt.datasets.validation import validate_dataset
 from tdt.preprocessing.tile_dataset import tile_dataset
@@ -45,6 +47,19 @@ def main(argv: list[str] | None = None) -> int:
         "--workers",
         default="1",
         help="Worker processes for --with-morphology. Use an integer or 'auto'. Default: 1.",
+    )
+    analyze.add_argument(
+        "--connectivity",
+        type=int,
+        choices=(1, 2),
+        default=None,
+        help="Connected-region rule for morphology: 1=edge, 2=edge-and-corner.",
+    )
+    analyze.add_argument(
+        "--min-area-px",
+        type=int,
+        default=None,
+        help="Exclude connected regions below this pixel area from morphology output.",
     )
 
     convert = subparsers.add_parser("labelme-to-masks", help="Convert LabelMe JSON files to masks.")
@@ -98,6 +113,16 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
 
+    try:
+        return _run_command(args)
+    except (FileNotFoundError, KeyError, OSError, ValueError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+
+
+def _run_command(args: argparse.Namespace) -> int:
+    """Execute one parsed CLI command and return a process status code."""
+
     if args.command == "validate":
         config = load_config(args.config)
         issues = validate_dataset(config)
@@ -110,6 +135,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "manifest":
         config = load_config(args.config)
+        if not args.allow_missing_masks:
+            _require_valid_dataset(config)
         items = collect_dataset_items(config, require_masks=not args.allow_missing_masks)
         output = write_manifest(items, args.out)
         print(output)
@@ -117,12 +144,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "analyze":
         config = load_config(args.config)
+        _require_valid_dataset(config)
         report_path = generate_dataset_report(
             config,
             args.out,
             with_morphology=args.with_morphology,
             show_progress=not args.no_progress,
             morphology_workers=args.workers,
+            morphology_connectivity=args.connectivity,
+            morphology_min_area_px=args.min_area_px,
         )
         print(report_path)
         return 0
@@ -172,6 +202,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "split":
         config = load_config(args.config)
+        if not args.allow_missing_masks:
+            _require_valid_dataset(config)
         output_dir = args.out or config.paths.splits
         if output_dir is None:
             print("ERROR: provide --out or config.paths.splits.")
@@ -189,6 +221,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "tile":
         config = load_config(args.config)
+        _require_valid_dataset(config)
         manifest_path = tile_dataset(
             config,
             args.out,
@@ -203,6 +236,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "overlay":
         config = load_config(args.config)
+        _require_valid_dataset(config)
         outputs = export_mask_overlays(
             config,
             args.out,
@@ -222,6 +256,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     return 1
+
+
+def _require_valid_dataset(config: DatasetConfig) -> None:
+    issues = validate_dataset(config)
+    if issues:
+        details = "\n- ".join(issues)
+        raise ValueError(f"Dataset validation failed:\n- {details}")
 
 
 def _parse_pair(value: str | None) -> tuple[int, int] | None:

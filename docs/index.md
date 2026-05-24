@@ -6,8 +6,8 @@
 configure -> validate -> convert -> manifest -> split -> analyze -> tile -> visualize
 ```
 
-The V1 release is intentionally model-agnostic. It does not include a training
-framework and does not run benchmark evaluation by default.
+V1 focuses on auditable semantic-mask morphology analysis and paired
+image/mask preprocessing.
 
 ## Dataset Configuration
 
@@ -29,6 +29,13 @@ annotation:
   format: labelme
   background_id: 0
 
+analysis:
+  ignore_index: 255
+  min_foreground_px: 4
+  morphology:
+    connectivity: 2
+    min_area_px: 1
+
 classes:
   - id: 0
     name: background
@@ -43,7 +50,8 @@ classes:
 
 ## CLI Workflow
 
-`example_data` is the official small real dataset shipped with the repository:
+`example_data` is the official small real dataset shipped with the GitHub
+repository and is not included in PyPI distribution archives:
 
 ```bash
 tdt validate configs/example_data.yaml
@@ -67,8 +75,9 @@ tdt overlay configs/local_my_dataset.yaml --out data/raw/my_dataset/overlays --l
 
 ## Full Morphology Profiling
 
-Full morphology profiling computes connected-instance descriptors including
-compactness, elongation, solidity, skeleton length, and medial-axis width. It can
+Full morphology profiling computes connected-region descriptors including
+compactness, elongation, solidity, skeleton length, and medial-axis width. Size
+outputs are explicitly expressed in pixels. It can
 be slow on high-resolution masks, so workers are explicitly controlled:
 
 ```bash
@@ -90,6 +99,7 @@ tdt analyze configs/example_data.yaml \
 - `cooccurrence_matrix.csv`
 - `quality_issues.csv`
 - `quality_summary.csv`
+- `analysis_metadata.json`
 - `morphology_descriptors.csv` when `--with-morphology` is enabled
 - `morphology_summary.csv` when `--with-morphology` is enabled
 
@@ -105,3 +115,4 @@ tdt analyze configs/example_data.yaml \
 - [CLI reference](cli_reference.md)
 - [Artifact schema](artifact_schema.md)
 - [Release checklist](release_checklist.md)
+- [Roadmap](roadmap.md)

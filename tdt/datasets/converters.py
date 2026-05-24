@@ -33,21 +33,15 @@ def labelme_to_mask(
         Class id used for unlabeled pixels.
     """
 
-    with Path(labelme_json).open("r", encoding="utf-8") as stream:
-        data = json.load(stream)
-
+    path = Path(labelme_json)
+    data = _read_labelme_document(path)
     height = int(data["imageHeight"])
     width = int(data["imageWidth"])
     mask_image = Image.new("L", (width, height), color=int(background_id))
     draw = ImageDraw.Draw(mask_image)
 
-    for shape in data.get("shapes", []):
-        label = shape.get("label")
-        if label not in class_to_id:
-            continue
-        points = [tuple(point) for point in shape.get("points", [])]
-        if len(points) >= 3:
-            draw.polygon(points, fill=int(class_to_id[label]))
+    for class_id, points in _mapped_polygons(data, class_to_id, path):
+        draw.polygon(points, fill=int(class_id))
 
     mask = np.asarray(mask_image, dtype=np.uint8)
     if output_path is not None:
@@ -81,6 +75,10 @@ def convert_labelme_directory(
     """Convert all LabelMe JSON files in a directory to semantic masks."""
 
     annotations = sorted(Path(annotation_dir).glob("*.json"))
+    if not Path(annotation_dir).exists():
+        raise FileNotFoundError(f"Annotation directory does not exist: {annotation_dir}")
+    if not annotations:
+        raise ValueError(f"No LabelMe JSON files found in: {annotation_dir}")
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     tolerant_mapping = build_label_mapping(class_to_id)
@@ -111,8 +109,12 @@ def labelme_directory_to_coco(
     """Convert a directory of LabelMe JSON files to a COCO-style JSON file."""
 
     annotations = sorted(Path(annotation_dir).glob("*.json"))
+    if not Path(annotation_dir).exists():
+        raise FileNotFoundError(f"Annotation directory does not exist: {annotation_dir}")
+    if not annotations:
+        raise ValueError(f"No LabelMe JSON files found in: {annotation_dir}")
     tolerant_mapping = build_label_mapping(class_to_id)
-    categories = [
+    categories: list[dict[str, int | str]] = [
         {"id": int(class_id), "name": str(label), "supercategory": "defect"}
         for label, class_id in sorted(class_to_id.items(), key=lambda item: item[1])
         if int(class_id) != background_id
@@ -120,16 +122,16 @@ def labelme_directory_to_coco(
     seen_category_ids: set[int] = set()
     deduped_categories = []
     for category in categories:
-        if category["id"] in seen_category_ids:
+        category_id = int(category["id"])
+        if category_id in seen_category_ids:
             continue
-        seen_category_ids.add(category["id"])
+        seen_category_ids.add(category_id)
         deduped_categories.append(category)
 
     coco: dict[str, Any] = {"images": [], "annotations": [], "categories": deduped_categories}
     annotation_id = 1
     for image_id, path in enumerate(annotations, start=1):
-        with path.open("r", encoding="utf-8") as stream:
-            data = json.load(stream)
+        data = _read_labelme_document(path)
         width = int(data["imageWidth"])
         height = int(data["imageHeight"])
         coco["images"].append(
@@ -140,13 +142,8 @@ def labelme_directory_to_coco(
                 "height": height,
             }
         )
-        for shape in data.get("shapes", []):
-            label = str(shape.get("label", ""))
-            category_id = tolerant_mapping.get(label, tolerant_mapping.get(_normalize_label(label)))
-            if category_id is None or int(category_id) == background_id:
-                continue
-            points = [(float(x), float(y)) for x, y in shape.get("points", [])]
-            if len(points) < 3:
+        for category_id, points in _mapped_polygons(data, tolerant_mapping, path):
+            if int(category_id) == background_id:
                 continue
             xs = [point[0] for point in points]
             ys = [point[1] for point in points]
@@ -178,22 +175,15 @@ def labelme_to_mask_tolerant(
 ) -> np.ndarray:
     """Convert one LabelMe file using exact and normalized label matching."""
 
-    with Path(labelme_json).open("r", encoding="utf-8") as stream:
-        data = json.load(stream)
-
+    path = Path(labelme_json)
+    data = _read_labelme_document(path)
     height = int(data["imageHeight"])
     width = int(data["imageWidth"])
     mask_image = Image.new("L", (width, height), color=int(background_id))
     draw = ImageDraw.Draw(mask_image)
 
-    for shape in data.get("shapes", []):
-        label = str(shape.get("label", ""))
-        class_id = class_to_id.get(label, class_to_id.get(_normalize_label(label)))
-        if class_id is None:
-            continue
-        points = [tuple(point) for point in shape.get("points", [])]
-        if len(points) >= 3:
-            draw.polygon(points, fill=int(class_id))
+    for class_id, points in _mapped_polygons(data, class_to_id, path):
+        draw.polygon(points, fill=int(class_id))
     return np.asarray(mask_image, dtype=np.uint8)
 
 
@@ -207,3 +197,50 @@ def _polygon_area(points: list[tuple[float, float]]) -> float:
         next_point = points[(index + 1) % len(points)]
         area += point[0] * next_point[1] - next_point[0] * point[1]
     return abs(area) / 2.0
+
+
+def _read_labelme_document(path: Path) -> dict[str, Any]:
+    try:
+        with path.open("r", encoding="utf-8") as stream:
+            data = json.load(stream)
+    except json.JSONDecodeError as error:
+        raise ValueError(f"Invalid LabelMe JSON: {path}") from error
+    if not isinstance(data, dict):
+        raise ValueError(f"LabelMe document must be a JSON object: {path}")
+    try:
+        width = int(data["imageWidth"])
+        height = int(data["imageHeight"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise ValueError(f"LabelMe document lacks valid imageWidth/imageHeight: {path}") from error
+    if width <= 0 or height <= 0:
+        raise ValueError(f"LabelMe image dimensions must be positive: {path}")
+    if not isinstance(data.get("shapes", []), list):
+        raise ValueError(f"LabelMe shapes must be a list: {path}")
+    return data
+
+
+def _mapped_polygons(
+    data: dict[str, Any],
+    class_to_id: dict[str, int],
+    path: Path,
+) -> list[tuple[int, list[tuple[float, float]]]]:
+    polygons: list[tuple[int, list[tuple[float, float]]]] = []
+    for index, shape in enumerate(data.get("shapes", [])):
+        if not isinstance(shape, dict):
+            raise ValueError(f"LabelMe shape {index} must be an object: {path}")
+        shape_type = shape.get("shape_type", "polygon")
+        if shape_type not in (None, "polygon"):
+            raise ValueError(f"Only LabelMe polygon shapes are supported in V1: {path} shape {index}")
+        label = str(shape.get("label", ""))
+        class_id = class_to_id.get(label, class_to_id.get(_normalize_label(label)))
+        if class_id is None:
+            raise ValueError(f"Unknown LabelMe label '{label}' in {path} shape {index}.")
+        raw_points = shape.get("points", [])
+        if not isinstance(raw_points, list) or len(raw_points) < 3:
+            raise ValueError(f"LabelMe polygon has fewer than three points: {path} shape {index}")
+        try:
+            points = [(float(point[0]), float(point[1])) for point in raw_points]
+        except (IndexError, TypeError, ValueError) as error:
+            raise ValueError(f"LabelMe polygon has invalid points: {path} shape {index}") from error
+        polygons.append((int(class_id), points))
+    return polygons

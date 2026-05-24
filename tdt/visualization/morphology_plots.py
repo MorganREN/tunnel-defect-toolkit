@@ -115,8 +115,8 @@ def save_morphology_plots(
         outputs.append(
             save_morphology_boxplot(
                 frame,
-                "mean_width",
-                out / f"mean_width_by_class.{suffix}",
+                "mean_width_px",
+                out / f"mean_width_px_by_class.{suffix}",
                 log_scale=True,
             )
         )

@@ -47,8 +47,14 @@ descriptors.
 
 ```bash
 tdt analyze configs/example_data.yaml --out analysis_output
-tdt analyze configs/local_my_dataset.yaml --out analysis_output_morphology --with-morphology --workers 4
+tdt analyze configs/local_my_dataset.yaml --out analysis_output_morphology \
+  --with-morphology --workers 4 --connectivity 2 --min-area-px 1
 ```
+
+Morphology values with a physical dimension are reported in pixels. Policy
+values may be read from `analysis.morphology` in the config or overridden with
+`--connectivity` and `--min-area-px`. Every analysis run writes
+`analysis_metadata.json`.
 
 ## `tdt tile`
 

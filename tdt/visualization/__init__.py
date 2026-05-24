@@ -1,1 +1,1 @@
-"""Visualization utilities for overlays, plots, failures, and dashboards."""
+"""Visualization utilities for semantic-mask overlays and morphology plots."""

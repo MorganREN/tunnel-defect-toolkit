@@ -15,13 +15,34 @@ from tdt.datasets.schema import DatasetConfig
 from tdt.utils.io import list_images, read_mask
 from tdt.utils.progress import progress
 
+MORPHOLOGY_COLUMNS = [
+    "class_id",
+    "instance_id",
+    "area_px",
+    "perimeter_px",
+    "compactness",
+    "elongation",
+    "eccentricity",
+    "solidity",
+    "bbox_width_px",
+    "bbox_height_px",
+    "skeleton_length_px",
+    "mean_width_px",
+    "orientation",
+    "image_id",
+    "class_name",
+]
+
 
 def morphology_table(
     config: DatasetConfig,
     show_progress: bool = True,
     workers: int | str = 1,
+    *,
+    connectivity: int = 2,
+    min_area_px: int = 1,
 ) -> pd.DataFrame:
-    """Compute instance-level morphology descriptors for all masks."""
+    """Compute connected-region morphology descriptors for all masks."""
 
     if config.paths.masks is None:
         raise ValueError("morphology_table requires config.paths.masks.")
@@ -39,10 +60,18 @@ def morphology_table(
             desc="Morphology descriptors",
             enabled=show_progress,
         ):
-            rows.extend(_describe_mask(mask_path, foreground_ids, class_name))
+            rows.extend(_describe_mask(mask_path, foreground_ids, class_name, connectivity, min_area_px))
         return _to_sorted_frame(rows)
 
-    rows = _parallel_morphology(mask_paths, foreground_ids, class_name, worker_count, show_progress)
+    rows = _parallel_morphology(
+        mask_paths,
+        foreground_ids,
+        class_name,
+        worker_count,
+        show_progress,
+        connectivity,
+        min_area_px,
+    )
     return _to_sorted_frame(rows)
 
 
@@ -67,12 +96,21 @@ def _parallel_morphology(
     class_name: dict[int, str],
     workers: int,
     show_progress: bool,
+    connectivity: int,
+    min_area_px: int,
 ) -> list[dict]:
     rows: list[dict] = []
     try:
         with ProcessPoolExecutor(max_workers=workers) as executor:
             futures = [
-                executor.submit(_describe_mask, mask_path, foreground_ids, class_name)
+                executor.submit(
+                    _describe_mask,
+                    mask_path,
+                    foreground_ids,
+                    class_name,
+                    connectivity,
+                    min_area_px,
+                )
                 for mask_path in mask_paths
             ]
             for future in progress(
@@ -95,7 +133,7 @@ def _parallel_morphology(
             desc="Morphology descriptors",
             enabled=show_progress,
         ):
-            rows.extend(_describe_mask(mask_path, foreground_ids, class_name))
+            rows.extend(_describe_mask(mask_path, foreground_ids, class_name, connectivity, min_area_px))
     return rows
 
 
@@ -103,10 +141,17 @@ def _describe_mask(
     mask_path: Path,
     foreground_ids: set[int],
     class_name: dict[int, str],
+    connectivity: int,
+    min_area_px: int,
 ) -> list[dict]:
     mask = read_mask(mask_path)
     rows = []
-    for descriptor in describe_instances(mask, foreground_ids):
+    for descriptor in describe_instances(
+        mask,
+        foreground_ids,
+        connectivity=connectivity,
+        min_area_px=min_area_px,
+    ):
         row = asdict(descriptor)
         row["image_id"] = mask_path.stem
         row["class_name"] = class_name.get(descriptor.class_id, str(descriptor.class_id))
@@ -115,7 +160,7 @@ def _describe_mask(
 
 
 def _to_sorted_frame(rows: list[dict]) -> pd.DataFrame:
-    frame = pd.DataFrame(rows)
+    frame = pd.DataFrame(rows, columns=MORPHOLOGY_COLUMNS)
     if frame.empty:
         return frame
     return frame.sort_values(["image_id", "class_id", "instance_id"]).reset_index(drop=True)
