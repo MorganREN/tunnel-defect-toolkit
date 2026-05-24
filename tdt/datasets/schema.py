@@ -1,8 +1,8 @@
 """Dataset configuration schema.
 
 The schema is intentionally small in V1. It standardizes enough metadata for
-analysis, tiling, evaluation, and reporting without binding the toolkit to a
-specific training framework.
+semantic-mask morphology analysis, quality inspection, paired tiling, and
+reporting.
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ class DatasetConfig:
     background_id: int = 0
     ignore_index: int | None = 255
     tiling: dict[str, Any] | None = None
-    evaluation: dict[str, Any] | None = None
+    analysis: dict[str, Any] | None = None
 
     @property
     def class_ids(self) -> set[int]:
@@ -77,11 +77,22 @@ def load_dataset_config(path: str | Path) -> DatasetConfig:
     """
 
     config_path = Path(path)
-    with config_path.open("r", encoding="utf-8") as stream:
-        raw = yaml.safe_load(stream)
+    if not config_path.exists():
+        raise FileNotFoundError(f"Dataset config does not exist: {config_path}")
+    try:
+        with config_path.open("r", encoding="utf-8") as stream:
+            raw = yaml.safe_load(stream)
+    except yaml.YAMLError as error:
+        raise ValueError(f"Invalid YAML dataset config: {config_path}") from error
+    if not isinstance(raw, dict):
+        raise ValueError(f"Dataset config must contain a YAML mapping: {config_path}")
+    if "name" not in raw:
+        raise ValueError("Dataset config requires a 'name' field.")
 
     root = config_path.parent.parent if config_path.parent.name == "configs" else config_path.parent
     paths_raw = raw.get("paths", {})
+    if not isinstance(paths_raw, dict) or "images" not in paths_raw:
+        raise ValueError("Dataset config requires paths.images.")
     paths = DatasetPaths(
         images=_resolve_path(root, paths_raw["images"]),
         masks=_resolve_optional_path(root, paths_raw.get("masks")),
@@ -89,29 +100,42 @@ def load_dataset_config(path: str | Path) -> DatasetConfig:
         splits=_resolve_optional_path(root, paths_raw.get("splits")),
     )
 
-    classes = tuple(
-        ClassInfo(
-            id=int(item["id"]),
-            name=str(item["name"]),
-            color=tuple(int(v) for v in item.get("color", [0, 0, 0])),
-            morphology=item.get("morphology"),
-            aliases=tuple(str(alias) for alias in item.get("aliases", [])),
+    classes_raw = raw.get("classes", [])
+    if not isinstance(classes_raw, list):
+        raise ValueError("Dataset config field 'classes' must be a list.")
+    classes: list[ClassInfo] = []
+    for index, item in enumerate(classes_raw):
+        if not isinstance(item, dict) or "id" not in item or "name" not in item:
+            raise ValueError(f"Class entry {index} requires 'id' and 'name'.")
+        color = tuple(int(v) for v in item.get("color", [0, 0, 0]))
+        if len(color) != 3 or any(channel < 0 or channel > 255 for channel in color):
+            raise ValueError(f"Class entry {index} color must contain three values from 0 to 255.")
+        classes.append(
+            ClassInfo(
+                id=int(item["id"]),
+                name=str(item["name"]),
+                color=color,
+                morphology=item.get("morphology"),
+                aliases=tuple(str(alias) for alias in item.get("aliases", [])),
+            )
         )
-        for item in raw.get("classes", [])
-    )
 
     annotation = raw.get("annotation", {})
-    evaluation = raw.get("evaluation", {})
+    if not isinstance(annotation, dict):
+        raise ValueError("Dataset config field 'annotation' must be a mapping.")
+    analysis = raw.get("analysis", {})
+    if not isinstance(analysis, dict):
+        raise ValueError("Dataset config field 'analysis' must be a mapping.")
     return DatasetConfig(
         name=str(raw["name"]),
         task=str(raw.get("task", "semantic_segmentation")),
         paths=paths,
-        classes=classes,
+        classes=tuple(classes),
         annotation_format=annotation.get("format"),
         background_id=int(annotation.get("background_id", 0)),
-        ignore_index=evaluation.get("ignore_index", 255),
+        ignore_index=analysis.get("ignore_index", 255),
         tiling=raw.get("tiling"),
-        evaluation=evaluation,
+        analysis=analysis,
     )
 
 

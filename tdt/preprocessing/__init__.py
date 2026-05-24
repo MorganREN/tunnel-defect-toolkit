@@ -1,1 +1,1 @@
-"""Preprocessing, tiling, stitching, augmentation, and balancing utilities."""
+"""Paired image/mask tiling utilities."""

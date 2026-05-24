@@ -32,9 +32,17 @@ def export_mask_overlays(
 
     outputs: list[Path] = []
     for item in progress(items, total=len(items), desc="Overlay export", enabled=show_progress):
+        if item.mask_path is None:
+            raise FileNotFoundError(f"Missing mask for overlay item: {item.image_id}")
         image = read_image(item.image_path)
         mask = read_mask(item.mask_path)
-        overlay = overlay_mask(image, mask, color_map=color_map, alpha=alpha)
+        overlay = overlay_mask(
+            image,
+            mask,
+            color_map=color_map,
+            alpha=alpha,
+            background_id=config.background_id,
+        )
         output_path = out / f"{item.image_id}_overlay.png"
         Image.fromarray(overlay).save(output_path)
         outputs.append(output_path)

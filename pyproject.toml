@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "tunnel-defect-toolkit"
 version = "0.1.0"
-description = "Model-agnostic toolkit for tunnel defect dataset analysis, preprocessing, visualization, and reporting."
+description = "Toolkit for semantic-mask tunnel defect morphology analysis and dataset reporting."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -30,7 +30,6 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Image Processing",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
   "numpy>=1.23",
@@ -74,3 +73,4 @@ testpaths = ["tests"]
 [tool.mypy]
 python_version = "3.10"
 ignore_missing_imports = true
+follow_imports = "skip"

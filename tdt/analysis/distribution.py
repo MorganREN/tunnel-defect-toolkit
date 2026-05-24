@@ -19,17 +19,9 @@ def class_distribution(config: DatasetConfig, show_progress: bool = True) -> pd.
         raise ValueError("class_distribution requires config.paths.masks.")
 
     mask_paths = list_images(config.paths.masks)
-    stats = {
-        item.id: {
-            "class_id": item.id,
-            "class_name": item.name,
-            "morphology": item.morphology,
-            "image_count": 0,
-            "pixel_count": 0,
-        }
-        for item in config.classes
-    }
-    class_ids = sorted(stats)
+    image_counts = {item.id: 0 for item in config.classes}
+    pixel_counts = {item.id: 0 for item in config.classes}
+    class_ids = sorted(pixel_counts)
     total_pixels = 0
     for mask_path in progress(
         mask_paths,
@@ -43,10 +35,19 @@ def class_distribution(config: DatasetConfig, show_progress: bool = True) -> pd.
         counts_by_id = dict(zip((int(value) for value in values), (int(count) for count in counts)))
         for class_id in class_ids:
             pixels = counts_by_id.get(class_id, 0)
-            stats[class_id]["pixel_count"] += pixels
-            stats[class_id]["image_count"] += int(pixels > 0)
+            pixel_counts[class_id] += pixels
+            image_counts[class_id] += int(pixels > 0)
 
-    rows = list(stats.values())
+    rows = [
+        {
+            "class_id": item.id,
+            "class_name": item.name,
+            "morphology": item.morphology,
+            "image_count": image_counts[item.id],
+            "pixel_count": pixel_counts[item.id],
+        }
+        for item in config.classes
+    ]
     frame = pd.DataFrame(rows)
     annotated_pixels = max(
         int(frame.loc[frame["class_id"] != config.background_id, "pixel_count"].sum()), 1

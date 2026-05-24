@@ -1,38 +1,37 @@
 # Tunnel Defect Toolkit
 
-`tunnel-defect-toolkit` is a model-agnostic Python toolkit for tunnel defect
-dataset analysis, resolution-adaptive preprocessing, visualization, and
-reproducible reporting.
+`tunnel-defect-toolkit` (`tdt`) is a Python toolkit for reproducible
+characterisation of semantic-mask tunnel defect datasets. It converts polygon
+annotations, audits dataset quality, computes connected-region morphology,
+creates paired tiles, and exports figures and reports suitable for research
+records.
 
-The package is designed to support morphology-aware tunnel defect benchmark and
-dataset papers first, while staying independent of any specific model family.
+## V1 (`0.1.0`) Capability Boundary
 
-## Scope of V1.0.0
+V1 provides:
 
-V1.0.0 focuses on dataset and preprocessing utilities:
+- YAML dataset configuration and input validation
+- LabelMe polygon conversion to semantic masks and COCO-style polygon JSON
+- Image/mask manifests and deterministic source-image splits
+- Class distribution, resolution, co-occurrence, and mask-quality analysis
+- Connected-region morphology descriptors in pixel units
+- Morphology figures, annotation overlays, dataset cards, and HTML reports
+- Resolution-adaptive paired image/mask tiling
 
-- Dataset schemas and configuration validation
-- LabelMe / mask-oriented dataset conversion hooks
-- Morphology profiling for linear and areal defects
-- Class, pixel, instance, and resolution distribution analysis
-- Source-image-level splitting to avoid patch leakage
-- Resolution-adaptive tiling and Gaussian-weighted stitching
-- Split-aware tile generation
-- Static dataset and evaluation reports
-- CLI entry points
-
-V1 intentionally does not include model code, routing visualization, training
-framework bindings, quantization tooling, or a benchmark evaluation pipeline.
+V1 is limited to dataset assets and annotations. Its stable outputs are the
+manifests, tables, figures, reports, and paired tiles documented under
+[`docs/`](docs/index.md).
 
 ## Installation
 
-Install the package from PyPI:
+Install the lightweight package from PyPI:
 
 ```bash
 pip install tunnel-defect-toolkit
 ```
 
-For development, tests, and repository examples:
+For the official example data, documentation, and development checks, clone the
+repository:
 
 ```bash
 git clone https://github.com/MorganREN/tunnel-defect-toolkit.git
@@ -40,27 +39,28 @@ cd tunnel-defect-toolkit
 pip install -e ".[dev]"
 ```
 
-## Quick Start
+The PyPI wheel and source distribution contain the MIT-licensed library, CLI,
+documentation, and configuration template. The licensed `example_data` tutorial
+assets are available in the GitHub repository only, keeping PyPI distribution
+licensing unambiguous.
 
-The following example commands assume you are working from a cloned repository,
-because the official `example_data` sample lives in the GitHub repo rather than
-in the installed wheel.
+## Official Example Workflow
 
-Validate the example dataset config:
+The GitHub repository directory `examples/example_data/` contains 20 annotated
+tunnel-defect images distributed under `CC BY 4.0`; see its
+[`DATA_LICENSE.md`](https://github.com/MorganREN/tunnel-defect-toolkit/blob/main/examples/example_data/DATA_LICENSE.md).
 
 ```bash
 tdt validate configs/example_data.yaml
-```
-
-Generate a dataset report:
-
-```bash
-tdt analyze configs/example_data.yaml --out reports/example_data
-```
-
-Create source-level splits and tiles for the example dataset:
-
-```bash
+tdt analyze configs/example_data.yaml \
+  --out reports/example_data_morphology \
+  --with-morphology \
+  --workers 2
+tdt plot-morphology \
+  reports/example_data_morphology/morphology_descriptors.csv \
+  --out reports/example_data_morphology/figures \
+  --formats png,pdf
+tdt overlay configs/example_data.yaml --out reports/example_data_overlays --limit 20
 tdt split configs/example_data.yaml --out reports/example_data_splits --seed 42
 tdt tile configs/example_data.yaml \
   --out reports/example_data_tiles \
@@ -70,110 +70,65 @@ tdt tile configs/example_data.yaml \
   --require-splits
 ```
 
-For your own LabelMe dataset, copy the template and edit the paths/classes:
+`tdt analyze --with-morphology` writes descriptor columns with explicit pixel
+units and an `analysis_metadata.json` record of class mapping, input-manifest
+digest, analysis policy, package version, and run time. V1 treats touching
+regions of the same class as one connected region according to the configured
+connectivity.
+
+## Run On Your Data
+
+Place a local LabelMe dataset under `data/raw/` and start from the template:
 
 ```bash
 cp configs/labelme_template.yaml configs/local_my_dataset.yaml
 ```
 
-Then run the dataset workflow with your local config:
+Edit paths and label mappings, then run:
 
 ```bash
-# 1. Convert LabelMe polygons to semantic masks
+tdt validate configs/local_my_dataset.yaml
 tdt labelme-to-masks configs/local_my_dataset.yaml
-
-# 2. Write a source image/mask manifest
 tdt manifest configs/local_my_dataset.yaml --out data/raw/my_dataset/manifest.csv
-
-# 3. Create source-image-level splits before tiling
 tdt split configs/local_my_dataset.yaml --out data/raw/my_dataset/splits --seed 42
-
-# 4. Generate dataset analysis reports
-tdt analyze configs/local_my_dataset.yaml --out data/raw/my_dataset/analysis_output
-
-# 5. Generate resolution-adaptive image/mask tiles
-tdt tile configs/local_my_dataset.yaml --out data/processed/my_dataset_tiles
-
-# 6. Export annotation overlays for visual QA
+tdt analyze configs/local_my_dataset.yaml \
+  --out data/raw/my_dataset/analysis_output \
+  --with-morphology \
+  --workers auto
 tdt overlay configs/local_my_dataset.yaml --out data/raw/my_dataset/overlays --limit 24
+tdt tile configs/local_my_dataset.yaml --out data/processed/my_dataset_tiles
 ```
 
-Run full morphology profiling with process workers:
+Shape-analysis policy can be placed in the YAML config:
+
+```yaml
+analysis:
+  ignore_index: 255
+  min_foreground_px: 4
+  morphology:
+    connectivity: 2
+    min_area_px: 1
+```
+
+The command line can override region policy for a recorded analysis run:
 
 ```bash
 tdt analyze configs/local_my_dataset.yaml \
-  --out data/raw/my_dataset/analysis_output_morphology \
+  --out data/raw/my_dataset/analysis_filtered \
   --with-morphology \
-  --workers 4
+  --connectivity 2 \
+  --min-area-px 16
 ```
 
-Use `--workers auto` for a conservative automatic process count. If process
-workers are unavailable in a restricted environment, the toolkit falls back to
-single-process execution with a warning.
-
-Generate morphology figures from descriptor CSV:
-
-```bash
-tdt plot-morphology \
-  data/raw/my_dataset/analysis_output_morphology/morphology_descriptors.csv \
-  --out data/raw/my_dataset/analysis_output_morphology/figures \
-  --formats png,pdf
-```
-
-Export COCO-style polygon annotations:
-
-```bash
-tdt labelme-to-coco configs/local_my_dataset.yaml --out data/raw/my_dataset/annotations.coco.json
-```
-
-## V1 Boundaries
-
-V1.0.0 can:
-
-- validate dataset configs
-- convert LabelMe polygons to masks and COCO-style JSON
-- write source manifests
-- create source-image-level train/val/test splits
-- generate split-aware image/mask tiles
-- profile class, resolution, quality, co-occurrence, and morphology statistics
-- export morphology figures and mask overlays
-- write HTML reports and dataset cards
-
-V1.0.0 does not:
-
-- train models
-- run benchmark evaluation on predictions
-- include model architectures, routing maps, or learned modules
-- export ONNX/TensorRT/INT8 deployments
-- provide an interactive web app
-
-## Dataset Placement
-
-The repository includes a small real tunnel defect example dataset under:
-
-```text
-examples/example_data/
-```
-
-Place your own datasets manually under:
-
-```text
-data/raw/
-```
-
-Use `configs/labelme_template.yaml` as a starting point for private LabelMe
-datasets. Local configs named `configs/local*.yaml` are ignored by git so that
-dataset-specific paths and class mappings do not leak into the public package.
-
-Keep real datasets out of version control unless their license explicitly allows
+Keep datasets out of version control unless their license permits
 redistribution.
 
-## Package Names
+## Package And Citation
 
 - PyPI package: `tunnel-defect-toolkit`
-- Python import: `tdt`
+- Python import and CLI: `tdt`
+- Repository: [MorganREN/tunnel-defect-toolkit](https://github.com/MorganREN/tunnel-defect-toolkit)
 
-## Citation
-
-If you use this toolkit in academic work, cite the accompanying dataset or
-benchmark paper once released. A provisional `CITATION.cff` is included.
+Use [`CITATION.cff`](CITATION.cff) when citing the software. The source code is
+licensed under MIT; the included example dataset has its separate CC BY 4.0
+license.

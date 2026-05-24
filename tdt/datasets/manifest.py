@@ -31,13 +31,18 @@ def collect_dataset_items(config: DatasetConfig, require_masks: bool = False) ->
     """
 
     image_by_stem = _first_path_by_stem(list_images(config.paths.images))
+    if not image_by_stem:
+        raise ValueError(f"No image files found in: {config.paths.images}")
     mask_by_stem: dict[str, Path] = {}
     if config.paths.masks is not None and config.paths.masks.exists():
         mask_by_stem = _first_path_by_stem(list_images(config.paths.masks))
 
     stems = sorted(image_by_stem)
     if require_masks:
-        stems = [stem for stem in stems if stem in mask_by_stem]
+        missing = [stem for stem in stems if stem not in mask_by_stem]
+        if missing:
+            preview = ", ".join(missing[:5])
+            raise FileNotFoundError(f"Missing masks for {len(missing)} image(s): {preview}")
 
     return [
         DatasetItem(

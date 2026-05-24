@@ -30,7 +30,10 @@ classes:
 tiling:
   strategy: resolution_adaptive
   split_before_tiling: true
-  merge: gaussian
 
-evaluation:
+analysis:
   ignore_index: 255
+  min_foreground_px: 4
+  morphology:
+    connectivity: 2
+    min_area_px: 1

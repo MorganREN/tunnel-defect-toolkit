@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use tunnel-defect-toolkit, please cite the associated dataset or benchmark paper once available."
+message: "If you use tunnel-defect-toolkit, please cite this software release and its associated publication when available."
 title: "Tunnel Defect Toolkit"
 authors:
   - family-names: Ren
@@ -7,4 +7,4 @@ authors:
 version: 0.1.0
 license: MIT
 repository-code: "https://github.com/MorganREN/tunnel-defect-toolkit"
-date-released: 2026-05-18
+date-released: 2026-05-24

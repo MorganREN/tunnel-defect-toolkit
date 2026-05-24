@@ -16,7 +16,7 @@ def cooccurrence_matrix(config: DatasetConfig) -> pd.DataFrame:
         raise ValueError("cooccurrence_matrix requires config.paths.masks.")
 
     class_ids = [item.id for item in config.classes]
-    matrix = np.zeros((len(class_ids), len(class_ids)), dtype=np.int64)
+    matrix: np.ndarray = np.zeros((len(class_ids), len(class_ids)), dtype=np.int64)
     for mask_path in list_images(config.paths.masks):
         present = set(int(v) for v in np.unique(read_mask(mask_path)))
         for i, class_i in enumerate(class_ids):
